@@ -1,0 +1,82 @@
+
+/*
+  USELESS MACHINES - Sam Kingston, Joshua Linton, Emily Flood
+
+  Program for a wall drawing machine powered by two stepper motors and a servo motor for the drawing mechanism.
+
+  Created for Physical Computing (DIGF-2002) at OCAD U for professor Lindy Wilkins on Febuary 25, 2020.
+
+*/
+
+
+#include <Stepper.h> //INCLUDE STEPPER LIBRARY
+#include <Servo.h> // INCLUDE SERVO LIBRARY
+
+Servo myservo; 
+int pos = 0;    // STARTING SERVO REFERENCE POSITION
+
+
+const int stepsPerRevolution = 200;  // STEPS PER REVOLUTION FOR STANDARD STEPPER MOTOR
+
+//CODE FOR ON BOARD ULTRASONIC SENSOR LEFT IN FOR FUTURE ITERATION DESPITE NOT BEING USED IN THIS APPLICATION
+const int trigPin = 9;
+const int echoPin = 10;
+
+// DEFINE ULTRASONIC SENSOR VARIABLES FOR MATH
+long duration;
+int distance;
+
+// INITIALIZE STEPPERLIBRARY ON EVEN PINS 30 THROUGH 36
+Stepper myStepper(stepsPerRevolution,  30, 32, 34, 36);
+
+void setup() {
+
+  myservo.attach(40); // SERVO ATTATCHED TO PIN 40
+
+  pinMode(trigPin, OUTPUT); // SETS TRIGPIN TO OUTPUT
+  pinMode(echoPin, INPUT); // SETS ECHOPIN TO INOUT
+
+  myStepper.setSpeed(60); //SET STEPPER MOTOR SPEED TO 60 RPM
+
+  Serial.begin(9600); //INITIALIZE SERIAL PORT
+}
+
+void loop() {
+  
+  //FUNCTION TO ESTABLISH DISTANCE FROM ULTRASONIC SENSOR
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+
+  duration = pulseIn(echoPin, HIGH);//READS ECHO, RETURNS TIME IN MICROSECONDS
+  distance = (duration) * 0.034 / 2; //CALCULATE DISTANCE WITH THAT TIME
+
+  Serial.println(distance); //PRINT DISTANCE VALUE IN SERIAL MONITOR
+
+  //IF FUNCTION FOR DISTANCE. CAN BE ALTERED LATER BUT WITHOUT ULTRASONIC SENSOR ATTATCHED IT RUNS REGARDLESS
+  if (distance <= 5) {
+
+    //STEPPER MOTOR WHEEL MOVEMENT
+    myStepper.step(+1500);
+
+    //SERVO MARKER MOVEMENT
+    for (pos = 0; pos <= 180; pos += 1) {
+      // in steps of 1 degree
+      myservo.write(pos);
+      delay(15);
+    }
+    for (pos = 180; pos >= 0; pos -= 1) {
+      myservo.write(pos);
+      delay(15);
+    }
+  }
+
+  //ELSE STATEMENT TO BE USED WITH LEDS AND MOTORS IN FUTURE
+  else {
+
+
+  }
+}
